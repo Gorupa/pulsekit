@@ -26,7 +26,7 @@ Drop one `<script>` tag into any project and get real transaction charts, growth
 
 ```html
 <!-- 1. Include the library -->
-<script src="https://cdn.jsdelivr.net/gh/gorupa/pulsekit/pulsekit.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/gorupa/pulsekit/src/pulsekit.js"></script>
 
 <!-- 2. Add a container -->
 <div id="chart"></div>
@@ -131,12 +131,15 @@ PulseKit.utils.toDisplayName('tamil-nadu'); // → "Tamil Nadu"
 ## File Structure
 
 ```
-pulsekit.js/
-├── pulsekit.js       ← the library
+pulsekit/
+├── src/
+│   └── pulsekit.js        ← source library
+├── dist/
+│   └── pulsekit.min.js    ← minified build (v0.2)
 ├── demo/
-│   └── index.html    ← live demo + docs page
-├── LICENSE
-└── README.md
+│   └── index.html         ← live demo + docs page
+├── README.md
+└── LICENSE
 ```
 
 ---
