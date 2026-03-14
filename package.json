@@ -1,0 +1,35 @@
+{
+  "name": "pulsekit",
+  "version": "0.1.0",
+  "description": "The first open source JS library for PhonePe Pulse India payments data. Beautiful charts, zero setup.",
+  "main": "src/pulsekit.js",
+  "scripts": {
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "keywords": [
+    "phonepe",
+    "pulse",
+    "india",
+    "upi",
+    "payments",
+    "fintech",
+    "data-visualization",
+    "charts",
+    "open-source"
+  ],
+  "author": "gorupa <https://github.com/gorupa>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Gorupa/pulsekit.git"
+  },
+  "homepage": "https://gorupa.github.io/pulsekit/demo/",
+  "bugs": {
+    "url": "https://github.com/Gorupa/pulsekit/issues"
+  },
+  "files": [
+    "src/pulsekit.js",
+    "README.md",
+    "LICENSE"
+  ]
+}
