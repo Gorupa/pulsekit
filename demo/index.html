@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pulsekit.js — India Payments Visualisation Library</title>
+    <meta name="description" content="Open source JS library for visualising PhonePe Pulse India payments data. Zero setup, beautiful charts.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pulse: { DEFAULT: '#5f259f', light: '#f3eefa', dark: '#3d1466', accent: '#e63329' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        html { scroll-behavior: smooth; }
+
+        /* Code block */
+        .code-block {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 20px 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            line-height: 1.7;
+            overflow-x: auto;
+            color: #e2e8f0;
+        }
+        .code-block .kw  { color: #c792ea; }
+        .code-block .fn  { color: #82aaff; }
+        .code-block .str { color: #c3e88d; }
+        .code-block .num { color: #f78c6c; }
+        .code-block .cm  { color: #546e7a; }
+
+        /* Animated hero gradient */
+        .hero-bg {
+            background: linear-gradient(135deg, #1a0533 0%, #2d0a5f 40%, #5f259f 100%);
+        }
+
+        /* Glow orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.25;
+            pointer-events: none;
+        }
+
+        /* Section tabs */
+        .demo-tab.active {
+            background: #5f259f;
+            color: white;
+        }
+
+        /* Live controls */
+        select, input[type=range] { accent-color: #5f259f; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up { animation: fadeUp 0.5s ease both; }
+        .fade-up-2 { animation: fadeUp 0.5s ease 0.1s both; }
+        .fade-up-3 { animation: fadeUp 0.5s ease 0.2s both; }
+    </style>
+</head>
+<body class="font-sans bg-gray-50 text-gray-900">
+
+<!-- ── NAV ── -->
+<nav class="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-100">
+    <div class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-lg bg-pulse flex items-center justify-center text-white text-xs font-bold">P</div>
+            <span class="font-bold text-gray-900">pulsekit<span class="text-pulse">.js</span></span>
+            <span class="text-xs bg-pulse-light text-pulse font-semibold px-2 py-0.5 rounded-full">v0.1.0</span>
+        </div>
+        <div class="flex items-center gap-4 text-sm font-medium text-gray-600">
+            <a href="#demo" class="hover:text-pulse transition-colors hidden sm:block">Demo</a>
+            <a href="#install" class="hover:text-pulse transition-colors hidden sm:block">Install</a>
+            <a href="#api" class="hover:text-pulse transition-colors hidden sm:block">API</a>
+            <a href="https://github.com/gorupa/pulsekit.js" target="_blank" rel="noopener"
+               class="flex items-center gap-1.5 bg-gray-900 text-white px-3 py-1.5 rounded-lg hover:bg-gray-700 transition-colors text-xs">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                GitHub
+            </a>
+        </div>
+    </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero-bg relative overflow-hidden text-white">
+    <div class="orb w-96 h-96 bg-purple-400 top-[-100px] right-[-60px]"></div>
+    <div class="orb w-72 h-72 bg-pink-400 bottom-[-80px] left-[-40px]"></div>
+
+    <div class="relative max-w-6xl mx-auto px-4 py-20 md:py-28">
+        <div class="max-w-3xl fade-up">
+            <div class="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm font-medium mb-6">
+                <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                Powered by PhonePe Pulse · CDLA-Permissive-2.0
+            </div>
+
+            <h1 class="text-4xl md:text-5xl font-extrabold leading-tight mb-5 tracking-tight">
+                India's payments data,<br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-300">
+                    beautiful by default.
+                </span>
+            </h1>
+
+            <p class="text-lg text-white/75 mb-8 leading-relaxed max-w-xl">
+                Drop <strong class="text-white font-semibold">pulsekit.js</strong> into any project.
+                Get transaction charts, growth trends and state rankings from real
+                PhonePe Pulse data — zero backend, zero setup.
+            </p>
+
+            <div class="flex flex-wrap gap-3 mb-10">
+                <a href="#demo"
+                   class="bg-white text-pulse font-semibold px-6 py-3 rounded-xl hover:bg-purple-50 transition-colors">
+                    See Live Demo
+                </a>
+                <a href="#install"
+                   class="bg-white/10 border border-white/25 font-semibold px-6 py-3 rounded-xl hover:bg-white/20 transition-colors">
+                    Quick Start →
+                </a>
+            </div>
+
+            <!-- Quick badges -->
+            <div class="flex flex-wrap gap-2 text-xs">
+                <span class="bg-white/10 border border-white/20 rounded-full px-3 py-1">🪶 Zero dependencies</span>
+                <span class="bg-white/10 border border-white/20 rounded-full px-3 py-1">📡 Fetches live from GitHub</span>
+                <span class="bg-white/10 border border-white/20 rounded-full px-3 py-1">🇮🇳 All 36 states</span>
+                <span class="bg-white/10 border border-white/20 rounded-full px-3 py-1">📅 2018 – 2023</span>
+                <span class="bg-white/10 border border-white/20 rounded-full px-3 py-1">MIT License</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── INSTALL ── -->
+<section id="install" class="max-w-6xl mx-auto px-4 py-16">
+    <h2 class="text-2xl font-bold mb-2">Quick Start</h2>
+    <p class="text-gray-500 mb-8">Two ways to use pulsekit.js — no npm, no build step required.</p>
+
+    <div class="grid md:grid-cols-2 gap-6">
+
+        <!-- CDN -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-lg">🌐</span>
+                <span class="font-semibold">Via CDN (recommended)</span>
+            </div>
+            <div class="code-block">
+<span class="cm">&lt;!-- 1. Add the script --&gt;</span>
+<span class="kw">&lt;script</span> <span class="fn">src</span>=<span class="str">"https://cdn.jsdelivr.net/gh/gorupa/pulsekit.js/pulsekit.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
+
+<span class="cm">&lt;!-- 2. Add a container --&gt;</span>
+<span class="kw">&lt;div</span> <span class="fn">id</span>=<span class="str">"chart"</span><span class="kw">&gt;&lt;/div&gt;</span>
+
+<span class="cm">&lt;!-- 3. Call the component --&gt;</span>
+<span class="kw">&lt;script&gt;</span>
+  <span class="fn">PulseKit</span>.<span class="fn">CategoryChart</span>(<span class="str">'#chart'</span>, {
+    <span class="fn">state</span>:   <span class="str">'delhi'</span>,
+    <span class="fn">year</span>:    <span class="num">2023</span>,
+    <span class="fn">quarter</span>: <span class="num">1</span>
+  });
+<span class="kw">&lt;/script&gt;</span></div>
+        </div>
+
+        <!-- Download -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-lg">📦</span>
+                <span class="font-semibold">Self-hosted</span>
+            </div>
+            <div class="code-block">
+<span class="cm"># Download the file</span>
+curl -O https://raw.githubusercontent.com/
+  gorupa/pulsekit.js/main/pulsekit.js
+
+<span class="cm"># Then in your HTML</span>
+<span class="kw">&lt;script</span> <span class="fn">src</span>=<span class="str">"pulsekit.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
+<span class="kw">&lt;script&gt;</span>
+  <span class="fn">PulseKit</span>.<span class="fn">GrowthChart</span>(<span class="str">'#el'</span>, {
+    <span class="fn">state</span>:  <span class="str">'maharashtra'</span>,
+    <span class="fn">metric</span>: <span class="str">'count'</span>
+  });
+<span class="kw">&lt;/script&gt;</span></div>
+        </div>
+    </div>
+</section>
+
+<!-- ── LIVE DEMO ── -->
+<section id="demo" class="bg-white border-y border-gray-100 py-16">
+    <div class="max-w-6xl mx-auto px-4">
+        <h2 class="text-2xl font-bold mb-2">Live Demo</h2>
+        <p class="text-gray-500 mb-8">All charts fetch real data from the PhonePe Pulse GitHub repo.</p>
+
+        <!-- Tab switcher -->
+        <div class="flex gap-2 mb-8 flex-wrap">
+            <button class="demo-tab active text-sm font-semibold px-4 py-2 rounded-lg border border-gray-200 transition-all" data-tab="category">
+                📊 CategoryChart
+            </button>
+            <button class="demo-tab text-sm font-semibold px-4 py-2 rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 transition-all" data-tab="growth">
+                📈 GrowthChart
+            </button>
+            <button class="demo-tab text-sm font-semibold px-4 py-2 rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 transition-all" data-tab="ranking">
+                🏆 StateRanking
+            </button>
+        </div>
+
+        <div class="grid lg:grid-cols-5 gap-8">
+
+            <!-- Controls panel -->
+            <div class="lg:col-span-2">
+                <div class="bg-gray-50 rounded-2xl p-5 border border-gray-100">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Options</p>
+
+                    <div id="controls-category">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
+                        <select id="cat-state" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-4 bg-white focus:outline-none focus:ring-2 focus:ring-pulse">
+                            <option value="delhi">Delhi</option>
+                            <option value="maharashtra">Maharashtra</option>
+                            <option value="karnataka">Karnataka</option>
+                            <option value="rajasthan">Rajasthan</option>
+                            <option value="tamil-nadu">Tamil Nadu</option>
+                            <option value="gujarat">Gujarat</option>
+                            <option value="uttar-pradesh">Uttar Pradesh</option>
+                            <option value="west-bengal">West Bengal</option>
+                            <option value="andhra-pradesh">Andhra Pradesh</option>
+                            <option value="telangana">Telangana</option>
+                        </select>
+
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                        <select id="cat-year" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-4 bg-white focus:outline-none focus:ring-2 focus:ring-pulse">
+                            <option value="2023">2023</option>
+                            <option value="2022">2022</option>
+                            <option value="2021">2021</option>
+                            <option value="2020">2020</option>
+                            <option value="2019">2019</option>
+                            <option value="2018">2018</option>
+                        </select>
+
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Quarter</label>
+                        <select id="cat-quarter" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-4 bg-white focus:outline-none focus:ring-2 focus:ring-pulse">
+                            <option value="1">Q1 — Jan to Mar</option>
+                            <option value="2">Q2 — Apr to Jun</option>
+                            <option value="3">Q3 — Jul to Sep</option>
+                            <option value="4">Q4 — Oct to Dec</option>
+                        </select>
+
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Metric</label>
+                        <select id="cat-metric" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-5 bg-white focus:outline-none focus:ring-2 focus:ring-pulse">
+                            <option value="count">Transaction Count</option>
+                            <option value="amount">Transaction Amount</option>
+                        </select>
+
+                        <button onclick="runCategoryDemo()"
+                            class="w-full bg-pulse text-white font-semibold py-2.5 rounded-xl hover:bg-pulse-dark transition-colors text-sm">
+                            Render Chart
+                        </button>
+                    </div>
+
+                    <div id="controls-growth" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
+                        <select id="growth-state" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-4 bg-white focus:outline-none focus:ring-2 focus:ring-pulse">
+                            <option value="delhi">Delhi</option>
+                            <option value="maharashtra">Maharashtra</option>
+                            <option value="karnataka">Karnataka</option>
+                            <option value="rajasthan">Rajasthan</option>
+                            <option value="tamil-nadu">Tamil Nadu</option>
+                            <option value="gujarat">Gujarat</option>
+                            <option value="uttar-pradesh">Uttar Pradesh</option>
+                        </select>
+
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Metric</label>
+                        <select id="growth-metric" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-5 bg-white focus:outline-none focus:ring-2 focus:ring-pulse">
+                            <option value="count">Transaction Count</option>
+                            <option value="amount">Transaction Amount</option>
+                        </select>
+
+                        <button onclick="runGrowthDemo()"
+                            class="w-full bg-pulse text-white font-semibold py-2.5 rounded-xl hover:bg-pulse-dark transition-colors text-sm">
+                            Render Chart
+                        </button>
+                    </div>
+
+                    <div id="controls-ranking" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                        <select id="rank-year" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-4 bg-white focus:outline-none focus:ring-2 focus:ring-pulse">
+                            <option value="2023">2023</option>
+                            <option value="2022">2022</option>
+                            <option value="2021">2021</option>
+                        </select>
+
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Quarter</label>
+                        <select id="rank-quarter" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-4 bg-white focus:outline-none focus:ring-2 focus:ring-pulse">
+                            <option value="1">Q1</option>
+                            <option value="2">Q2</option>
+                            <option value="3">Q3</option>
+                            <option value="4">Q4</option>
+                        </select>
+
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Metric</label>
+                        <select id="rank-metric" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-4 bg-white focus:outline-none focus:ring-2 focus:ring-pulse">
+                            <option value="count">Transaction Count</option>
+                            <option value="amount">Transaction Amount</option>
+                        </select>
+
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Top N states</label>
+                        <select id="rank-top" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-5 bg-white focus:outline-none focus:ring-2 focus:ring-pulse">
+                            <option value="5">Top 5</option>
+                            <option value="10" selected>Top 10</option>
+                            <option value="15">Top 15</option>
+                        </select>
+
+                        <button onclick="runRankingDemo()"
+                            class="w-full bg-pulse text-white font-semibold py-2.5 rounded-xl hover:bg-pulse-dark transition-colors text-sm">
+                            Render Chart
+                        </button>
+                    </div>
+
+                    <!-- Code preview -->
+                    <div class="mt-5">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Code</p>
+                        <pre class="code-block text-xs leading-relaxed" id="code-preview"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart output -->
+            <div class="lg:col-span-3">
+                <div id="demo-chart" class="min-h-48"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── API REFERENCE ── -->
+<section id="api" class="max-w-6xl mx-auto px-4 py-16">
+    <h2 class="text-2xl font-bold mb-2">API Reference</h2>
+    <p class="text-gray-500 mb-8">Three components, consistent options.</p>
+
+    <div class="space-y-6">
+
+        <!-- CategoryChart -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+                <span class="text-xl">📊</span>
+                <code class="font-mono font-semibold text-pulse text-sm">PulseKit.CategoryChart(selector, options)</code>
+            </div>
+            <div class="px-6 py-4">
+                <p class="text-sm text-gray-600 mb-4">Horizontal bar chart showing transaction categories for a state in a given quarter.</p>
+                <table class="w-full text-sm">
+                    <thead><tr class="text-left text-xs text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                        <th class="pb-2 pr-4">Option</th><th class="pb-2 pr-4">Type</th><th class="pb-2 pr-4">Default</th><th class="pb-2">Description</th>
+                    </tr></thead>
+                    <tbody class="divide-y divide-gray-50">
+                        <tr><td class="py-2 pr-4 font-mono text-purple-700">state</td><td class="pr-4 text-gray-500">string</td><td class="pr-4 text-gray-400">'delhi'</td><td class="text-gray-600">State slug e.g. 'maharashtra'</td></tr>
+                        <tr><td class="py-2 pr-4 font-mono text-purple-700">year</td><td class="pr-4 text-gray-500">number</td><td class="pr-4 text-gray-400">2023</td><td class="text-gray-600">2018 – 2023</td></tr>
+                        <tr><td class="py-2 pr-4 font-mono text-purple-700">quarter</td><td class="pr-4 text-gray-500">number</td><td class="pr-4 text-gray-400">1</td><td class="text-gray-600">1, 2, 3 or 4</td></tr>
+                        <tr><td class="py-2 pr-4 font-mono text-purple-700">metric</td><td class="pr-4 text-gray-500">string</td><td class="pr-4 text-gray-400">'count'</td><td class="text-gray-600">'count' or 'amount'</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- GrowthChart -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+                <span class="text-xl">📈</span>
+                <code class="font-mono font-semibold text-pulse text-sm">PulseKit.GrowthChart(selector, options)</code>
+            </div>
+            <div class="px-6 py-4">
+                <p class="text-sm text-gray-600 mb-4">Line chart showing transaction growth across all available quarters for a state.</p>
+                <table class="w-full text-sm">
+                    <thead><tr class="text-left text-xs text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                        <th class="pb-2 pr-4">Option</th><th class="pb-2 pr-4">Type</th><th class="pb-2 pr-4">Default</th><th class="pb-2">Description</th>
+                    </tr></thead>
+                    <tbody class="divide-y divide-gray-50">
+                        <tr><td class="py-2 pr-4 font-mono text-purple-700">state</td><td class="pr-4 text-gray-500">string</td><td class="pr-4 text-gray-400">'delhi'</td><td class="text-gray-600">State slug</td></tr>
+                        <tr><td class="py-2 pr-4 font-mono text-purple-700">metric</td><td class="pr-4 text-gray-500">string</td><td class="pr-4 text-gray-400">'count'</td><td class="text-gray-600">'count' or 'amount'</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- StateRanking -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+                <span class="text-xl">🏆</span>
+                <code class="font-mono font-semibold text-pulse text-sm">PulseKit.StateRanking(selector, options)</code>
+            </div>
+            <div class="px-6 py-4">
+                <p class="text-sm text-gray-600 mb-4">Ranked bar chart comparing all Indian states for a given quarter.</p>
+                <table class="w-full text-sm">
+                    <thead><tr class="text-left text-xs text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                        <th class="pb-2 pr-4">Option</th><th class="pb-2 pr-4">Type</th><th class="pb-2 pr-4">Default</th><th class="pb-2">Description</th>
+                    </tr></thead>
+                    <tbody class="divide-y divide-gray-50">
+                        <tr><td class="py-2 pr-4 font-mono text-purple-700">year</td><td class="pr-4 text-gray-500">number</td><td class="pr-4 text-gray-400">2023</td><td class="text-gray-600">2018 – 2023</td></tr>
+                        <tr><td class="py-2 pr-4 font-mono text-purple-700">quarter</td><td class="pr-4 text-gray-500">number</td><td class="pr-4 text-gray-400">1</td><td class="text-gray-600">1, 2, 3 or 4</td></tr>
+                        <tr><td class="py-2 pr-4 font-mono text-purple-700">metric</td><td class="pr-4 text-gray-500">string</td><td class="pr-4 text-gray-400">'count'</td><td class="text-gray-600">'count' or 'amount'</td></tr>
+                        <tr><td class="py-2 pr-4 font-mono text-purple-700">top</td><td class="pr-4 text-gray-500">number</td><td class="pr-4 text-gray-400">10</td><td class="text-gray-600">How many states to show</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer class="border-t border-gray-100 py-10">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded-md bg-pulse flex items-center justify-center text-white text-xs font-bold">P</div>
+            <span class="font-semibold text-sm">pulsekit<span class="text-pulse">.js</span></span>
+        </div>
+        <div class="flex items-center gap-4 text-sm text-gray-500">
+            <a href="https://github.com/gorupa/pulsekit.js" target="_blank" rel="noopener"
+               class="flex items-center gap-1.5 text-gray-700 font-medium hover:text-pulse transition-colors">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                gorupa
+            </a>
+            <span>·</span>
+            <a href="https://gorupa.github.io" target="_blank" rel="noopener" class="hover:text-pulse transition-colors">gorupa.github.io</a>
+        </div>
+        <div class="text-xs text-gray-400 text-center">
+            © 2026 pulsekit.js · MIT License<br>
+            Data: PhonePe Pulse · CDLA-Permissive-2.0
+        </div>
+    </div>
+</footer>
+
+<!-- Load pulsekit.js -->
+<script src="../pulsekit.js"></script>
+
+<script>
+    /* ── TAB SWITCHER ── */
+    const tabs = document.querySelectorAll('.demo-tab');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => {
+                t.classList.remove('active', 'bg-pulse', 'text-white');
+                t.classList.add('bg-gray-50', 'text-gray-700');
+            });
+            tab.classList.add('active');
+            tab.classList.remove('bg-gray-50', 'text-gray-700');
+
+            document.getElementById('controls-category').classList.add('hidden');
+            document.getElementById('controls-growth').classList.add('hidden');
+            document.getElementById('controls-ranking').classList.add('hidden');
+            document.getElementById('controls-' + tab.dataset.tab).classList.remove('hidden');
+
+            document.getElementById('demo-chart').innerHTML = '';
+            updateCodePreview(tab.dataset.tab);
+        });
+    });
+
+    /* ── CODE PREVIEW ── */
+    function updateCodePreview(tab) {
+        const previews = {
+            category: `PulseKit.CategoryChart('#chart', {\n  state:   '${document.getElementById('cat-state').value}',\n  year:    ${document.getElementById('cat-year').value},\n  quarter: ${document.getElementById('cat-quarter').value},\n  metric:  '${document.getElementById('cat-metric').value}'\n});`,
+            growth:   `PulseKit.GrowthChart('#chart', {\n  state:  '${document.getElementById('growth-state').value}',\n  metric: '${document.getElementById('growth-metric').value}'\n});`,
+            ranking:  `PulseKit.StateRanking('#chart', {\n  year:    ${document.getElementById('rank-year').value},\n  quarter: ${document.getElementById('rank-quarter').value},\n  metric:  '${document.getElementById('rank-metric').value}',\n  top:     ${document.getElementById('rank-top').value}\n});`,
+        };
+        document.getElementById('code-preview').textContent = previews[tab] || '';
+    }
+
+    /* ── DEMO RUNNERS ── */
+    function runCategoryDemo() {
+        PulseKit.CategoryChart('#demo-chart', {
+            state:   document.getElementById('cat-state').value,
+            year:    +document.getElementById('cat-year').value,
+            quarter: +document.getElementById('cat-quarter').value,
+            metric:  document.getElementById('cat-metric').value,
+        });
+        updateCodePreview('category');
+    }
+
+    function runGrowthDemo() {
+        PulseKit.GrowthChart('#demo-chart', {
+            state:  document.getElementById('growth-state').value,
+            metric: document.getElementById('growth-metric').value,
+        });
+        updateCodePreview('growth');
+    }
+
+    function runRankingDemo() {
+        PulseKit.StateRanking('#demo-chart', {
+            year:    +document.getElementById('rank-year').value,
+            quarter: +document.getElementById('rank-quarter').value,
+            metric:  document.getElementById('rank-metric').value,
+            top:     +document.getElementById('rank-top').value,
+        });
+        updateCodePreview('ranking');
+    }
+
+    // Auto-run first demo on load
+    updateCodePreview('category');
+    runCategoryDemo();
+</script>
+</body>
+</html>
