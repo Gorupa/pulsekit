@@ -1,7 +1,6 @@
 # pulsekit.js
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-pulsekit.js-5f259f?style=for-the-badge)](https://gorupa.github.io/pulsekit/demo/)
-[![npm](https://img.shields.io/npm/v/pulsekit?style=for-the-badge&color=5f259f)](https://www.npmjs.com/package/pulsekit)
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 [![Open Source](https://img.shields.io/badge/Open%20Source-Yes-6d28d9?style=for-the-badge&logo=github)](https://github.com/Gorupa/pulsekit)
 [![Data License](https://img.shields.io/badge/Data-CDLA--Permissive--2.0-blue?style=for-the-badge)](https://github.com/PhonePe/pulse)
